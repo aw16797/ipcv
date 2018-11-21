@@ -23,14 +23,15 @@ int main( int argc, const char** argv )
 {
   //fone = 2*(tp/(tp+fp))*(tp/(tp+fn))  /  (tp/(tp+fp))+(tp/(tp+fn))
 
-  int tp = atoi(argv[0]);
-  int fp = atoi(argv[1]);
-  int fn = atoi(argv[2]);
+  float tp = 2;
+  float fp = 64;
+  float fn = 0;
 
-  double precision = tp/(tp+fp);
-  double recall = tp/(tp+fn);
-  double f1 = 2 * (precision * recall) / (precision + recall);
-
+  float precision = tp/(tp+fp);
+  float recall = tp/(tp+fn);
+  float f1 = 2 * (precision * recall) / (precision + recall);
+  std::cout.precision(5);
+  std::cout.setf(std::ios::fixed);
   std::cout << f1 << std::endl;
   return 0;
 }
