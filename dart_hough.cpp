@@ -21,23 +21,27 @@ using namespace cv;
 /** Function Headers */
 void detectAndDisplay( Mat frame );
 Mat cannify_image( Mat frame );
-void hough_transform( Mat frame );
+Mat hough_transform( Mat frame );
 
 /** Global variables */
 String cascade_name = "dartcascade/cascade.xml";
 CascadeClassifier cascade;
 
 /** @function main */
-int main( int argc, const char** argv )
-{
+int main( int argc, const char** argv ) {
 	// 1. Read Input Image
 	Mat frame0 = imread("dart0.jpg", CV_LOAD_IMAGE_COLOR);
 	// 2. Load the Strong Classifier in a structure called `Cascade'
 	if( !cascade.load( cascade_name ) ){ printf("--(!)Error loading\n"); return -1; };
 	// 3. Blur and Canny edge detect the image
-  Mat edgemapped = cannify_image(frame0);
-  // 4. Perform general Hough Transform on Image
-  hough_transform(edgemapped);
+	Mat edgemapped = cannify_image(frame0);
+	// 4. Perform general Hough Transform on Image
+	Mat transformed = hough_transform(edgemapped);
+	// 5. Pick out most luminous points
+	equalizeHist( transformed, transformed );
+	Mat thresh;
+	threshold(transformed, thresh, 254, 255, THRESH_BINARY);
+	imwrite("thresh.jpg", thresh);
 }
 
 //Prep the image for Hough Transform
@@ -53,7 +57,8 @@ Mat cannify_image( Mat frame) {
   return edgemap;
 }
 
-void hough_transform( Mat frame ) {
+//Perform general hough transform on the edge image
+Mat hough_transform( Mat frame ) {
   const float pi = 3.14159;
   int frame_height = frame.rows;
 	int frame_width = frame.cols;
@@ -72,18 +77,19 @@ void hough_transform( Mat frame ) {
       int intensity = (int)frame.at<uchar>(x, y);
       if( intensity > 250) {
 
-        for(int theta = -90; theta < 90; theta++){
-          int t = (theta * pi)/180;
+        for(int theta = 0; theta < theta_max; theta++){
+          float t = (theta * pi)/180;
           int rho = (x * cos(t)) + (y * sin(t));
 
-          int current = (int)hough_space.at<uchar>(theta+90, rho);
+          int current = (int)hough_space.at<uchar>(theta, rho);
           int new_current = current + 1;
-          hough_space.at<uchar>(theta+90, rho) = (uchar)new_current;
+          hough_space.at<uchar>(theta, rho) = (uchar)new_current;
   			}
       }
 	  }
 	}
   imwrite("hough.jpg", hough_space);
+	return hough_space;
 }
 
 /** @function detectAndDisplay */
