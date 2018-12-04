@@ -37,127 +37,18 @@ int main( int argc, const char** argv )
 	detectAndDisplay( frame0 );
 	// 4. Save Result Image
 	imwrite( "dartboard0.jpg", frame0 );
-	// 1. Read Input Image
-	Mat frame1 = imread("dart1.jpg", CV_LOAD_IMAGE_COLOR);
-	// 2. Load the Strong Classifier in a structure called `Cascade'
-	if( !cascade.load( cascade_name ) ){ printf("--(!)Error loading\n"); return -1; };
-	// 3. Detect Faces and Display Result
-	detectAndDisplay( frame1 );
-	// 4. Save Result Image
-	imwrite( "dartboard1.jpg", frame1 );
-	// 1. Read Input Image
-	Mat frame2 = imread("dart2.jpg", CV_LOAD_IMAGE_COLOR);
-	// 2. Load the Strong Classifier in a structure called `Cascade'
-	if( !cascade.load( cascade_name ) ){ printf("--(!)Error loading\n"); return -1; };
-	// 3. Detect Faces and Display Result
-	detectAndDisplay( frame2 );
-	// 4. Save Result Image
-	imwrite( "dartboard2.jpg", frame2 );
-	// 1. Read Input Image
-	Mat frame3 = imread("dart3.jpg", CV_LOAD_IMAGE_COLOR);
-	// 2. Load the Strong Classifier in a structure called `Cascade'
-	if( !cascade.load( cascade_name ) ){ printf("--(!)Error loading\n"); return -1; };
-	// 3. Detect Faces and Display Result
-	detectAndDisplay( frame3 );
-	// 4. Save Result Image
-	imwrite( "dartboard3.jpg", frame3 );
-	// 1. Read Input Image
-	Mat frame4 = imread("dart4.jpg", CV_LOAD_IMAGE_COLOR);
-	// 2. Load the Strong Classifier in a structure called `Cascade'
-	if( !cascade.load( cascade_name ) ){ printf("--(!)Error loading\n"); return -1; };
-	// 3. Detect Faces and Display Result
-	detectAndDisplay( frame4 );
-	// 4. Save Result Image
-	imwrite( "dartboard4.jpg", frame4 );
-	// 1. Read Input Image
-	Mat frame5 = imread("dart5.jpg", CV_LOAD_IMAGE_COLOR);
-	// 2. Load the Strong Classifier in a structure called `Cascade'
-	if( !cascade.load( cascade_name ) ){ printf("--(!)Error loading\n"); return -1; };
-	// 3. Detect Faces and Display Result
-	detectAndDisplay( frame5 );
-	// 4. Save Result Image
-	imwrite( "dartboard5.jpg", frame5 );
-	// 1. Read Input Image
-	Mat frame6 = imread("dart6.jpg", CV_LOAD_IMAGE_COLOR);
-	// 2. Load the Strong Classifier in a structure called `Cascade'
-	if( !cascade.load( cascade_name ) ){ printf("--(!)Error loading\n"); return -1; };
-	// 3. Detect Faces and Display Result
-	detectAndDisplay( frame6 );
-	// 4. Save Result Image
-	imwrite( "dartboard6.jpg", frame6 );
-	// 1. Read Input Image
-	Mat frame7 = imread("dart7.jpg", CV_LOAD_IMAGE_COLOR);
-	// 2. Load the Strong Classifier in a structure called `Cascade'
-	if( !cascade.load( cascade_name ) ){ printf("--(!)Error loading\n"); return -1; };
-	// 3. Detect Faces and Display Result
-	detectAndDisplay( frame7 );
-	// 4. Save Result Image
-	imwrite( "dartboard7.jpg", frame7 );
-	// 1. Read Input Image
-	Mat frame8 = imread("dart8.jpg", CV_LOAD_IMAGE_COLOR);
-	// 2. Load the Strong Classifier in a structure called `Cascade'
-	if( !cascade.load( cascade_name ) ){ printf("--(!)Error loading\n"); return -1; };
-	// 3. Detect Faces and Display Result
-	detectAndDisplay( frame8 );
-	// 4. Save Result Image
-	imwrite( "dartboard8.jpg", frame8 );
-	// 1. Read Input Image
-	Mat frame9 = imread("dart9.jpg", CV_LOAD_IMAGE_COLOR);
-	// 2. Load the Strong Classifier in a structure called `Cascade'
-	if( !cascade.load( cascade_name ) ){ printf("--(!)Error loading\n"); return -1; };
-	// 3. Detect Faces and Display Result
-	detectAndDisplay( frame9 );
-	// 4. Save Result Image
-	imwrite( "dartboard9.jpg", frame9 );
-	// 1. Read Input Image
-	Mat frame10 = imread("dart10.jpg", CV_LOAD_IMAGE_COLOR);
-	// 2. Load the Strong Classifier in a structure called `Cascade'
-	if( !cascade.load( cascade_name ) ){ printf("--(!)Error loading\n"); return -1; };
-	// 3. Detect Faces and Display Result
-	detectAndDisplay( frame10 );
-	// 4. Save Result Image
-	imwrite( "dartboard10.jpg", frame10 );
-	// 1. Read Input Image
-	Mat frame11 = imread("dart11.jpg", CV_LOAD_IMAGE_COLOR);
-	// 2. Load the Strong Classifier in a structure called `Cascade'
-	if( !cascade.load( cascade_name ) ){ printf("--(!)Error loading\n"); return -1; };
-	// 3. Detect Faces and Display Result
-	detectAndDisplay( frame11 );
-	// 4. Save Result Image
-	imwrite( "dartboard11.jpg", frame11 );
-	// 1. Read Input Image
-	Mat frame12 = imread("dart12.jpg", CV_LOAD_IMAGE_COLOR);
-	// 2. Load the Strong Classifier in a structure called `Cascade'
-	if( !cascade.load( cascade_name ) ){ printf("--(!)Error loading\n"); return -1; };
-	// 3. Detect Faces and Display Result
-	detectAndDisplay( frame12 );
-	// 4. Save Result Image
-	imwrite( "dartboard12.jpg", frame12 );
-	// 1. Read Input Image
-	Mat frame13 = imread("dart13.jpg", CV_LOAD_IMAGE_COLOR);
-	// 2. Load the Strong Classifier in a structure called `Cascade'
-	if( !cascade.load( cascade_name ) ){ printf("--(!)Error loading\n"); return -1; };
-	// 3. Detect Faces and Display Result
-	detectAndDisplay( frame13 );
-	// 4. Save Result Image
-	imwrite( "dartboard13.jpg", frame13 );
-	// 1. Read Input Image
-	Mat frame14 = imread("dart14.jpg", CV_LOAD_IMAGE_COLOR);
-	// 2. Load the Strong Classifier in a structure called `Cascade'
-	if( !cascade.load( cascade_name ) ){ printf("--(!)Error loading\n"); return -1; };
-	// 3. Detect Faces and Display Result
-	detectAndDisplay( frame14 );
-	// 4. Save Result Image
-	imwrite( "dartboard14.jpg", frame14 );
-	// 1. Read Input Image
-	Mat frame15 = imread("dart15.jpg", CV_LOAD_IMAGE_COLOR);
-	// 2. Load the Strong Classifier in a structure called `Cascade'
-	if( !cascade.load( cascade_name ) ){ printf("--(!)Error loading\n"); return -1; };
-	// 3. Detect Faces and Display Result
-	detectAndDisplay( frame15 );
-	// 4. Save Result Image
-	imwrite( "dartboard15.jpg", frame15 );
-	return 0;
+}
+
+void houghSpace(Mat frame) {
+  const float pi = 3.14159
+	for (int i = 0; i < frame.row; i++){
+		for (int j = 0; i < frame.cols; i++){
+		float line1[2] = {j,pi/2};
+		float line2[2] = {((i*cos(pi/4))+(*sin(pi/4))),pi/4};
+		float line3[2] = {i,0};
+		float line4[2] = {((i*cos(pi/4))+(*sin(pi/4))),pi/4};
+	  }
+	}
 }
 
 /** @function detectAndDisplay */
