@@ -20,11 +20,12 @@ using namespace std;
 using namespace cv;
 
 /** Function Headers */
-void detectAndDisplay( Mat frame );
+vector<Rect> viola_jones_detection( Mat frame );
 Mat cannify_image( Mat frame );
 Mat line_transform( Mat frame );
 int*** circle_transform( Mat frame );
-Mat plot_lines( Mat img , Mat line_space);
+vector<Rect> hough_combine( Mat lines, int*** circles, vector<Rect> boards);
+Mat plot_shapes( Mat img , Mat line_space);
 
 
 /** Global variables */
@@ -34,27 +35,49 @@ CascadeClassifier cascade;
 /** @function main */
 int main( int argc, const char** argv ) {
 	// 1. Read Input Image
-	Mat frame0 = imread("images/dart0.jpg", CV_LOAD_IMAGE_COLOR);
+	Mat frame0 = imread("images/dart7.jpg", CV_LOAD_IMAGE_COLOR);
 	// 2. Load the Strong Classifier in a structure called `Cascade'
 	if( !cascade.load( cascade_name ) ){ printf("--(!)Error loading\n"); return -1; };
 	// 3. Blur and Canny edge detect the image
-	Mat edgemapped = cannify_image(frame0);
+	Mat edgemapped = cannify_image( frame0 );
 	// 4. Perform line Hough Transform on image
-	Mat transformed = line_transform(edgemapped);
+	Mat transformed = line_transform( edgemapped );
 	// 5. Perform circle Hough Transform on the image
-	int*** circle_transformed = circle_transform(edgemapped);
-	// 6. Pick out most luminous points
+	int*** circ_trans = circle_transform( edgemapped );
+	// 6. Threshold to return highest value points
+	//Threshold the lines accumulator
 	Mat thresh;
 	threshold(transformed, thresh, 100, 255, THRESH_BINARY);
-	imwrite("line_thresh.jpg", thresh);
-	// 7. Plot lines on image
-	//Mat plotted_lines = plot_lines(frame0, thresh1);
-	// 8. Plot circles on image
+
+	//Threshold the circles accumulator
+	int max_val = 0;
+	for (int i = 0; i < sizeof(circ_trans) / sizeof(*circ_trans); ++i) {
+		for (int j = 0; j < sizeof(*circ_trans) / sizeof(**circ_trans); ++j) {
+			for (int k = 5; k < sizeof(**circ_trans) / sizeof(***circ_trans); ++k) {
+				if (circ_trans[i][j][k] > max_val) {
+					max_val = circ_trans[i][j][k];
+				}
+				// if (circ_trans[i][j][k] < 100) {
+				// 	circ_trans[i][j][k] = 0;
+				// } else {
+				// 	circ_trans[i][j][k] = 255;
+				// }
+			}
+		}
+	}
+	std::cout << max_val << std::endl;
+
+	// 7. Perform Viola Jones detection on images
+	//vector<Rect> dartboards = viola_jones_detection( frame0 );
+	// 8. Combine result with Hough detected shapes
+	//vector<Rect> final_boards = hough_combine( transformed, circ_trans, dartboards);
+	// 9. Plot final results on image
+
 }
 
 /** @function detectAndDisplay */
-void detectAndDisplay( Mat frame ) {
-	std::vector<Rect> faces;
+vector<Rect> viola_jones_detection( Mat frame ) {
+	vector<Rect> dartboards;
 	Mat frame_gray;
 
 	// 1. Prepare Image by turning it into Grayscale and normalising lighting
@@ -62,15 +85,39 @@ void detectAndDisplay( Mat frame ) {
 	equalizeHist( frame_gray, frame_gray );
 
 	// 2. Perform Viola-Jones Object Detection
-	cascade.detectMultiScale( frame_gray, faces, 1.1, 1, 0|CV_HAAR_SCALE_IMAGE, Size(50, 50), Size(500,500) );
+	// Vector of rectangles stored in 'dartboards'
+	cascade.detectMultiScale( frame_gray, dartboards, 1.1, 1, 0|CV_HAAR_SCALE_IMAGE, Size(50, 50), Size(500,500) );
 
   // 3. Print number of Faces found
-	std::cout << faces.size() << std::endl;
+	//std::cout << dartboards.size() << std::endl;
 
   // 4. Draw box around faces found
-	for( int i = 0; i < faces.size(); i++ )	{
-		rectangle(frame, Point(faces[i].x, faces[i].y), Point(faces[i].x + faces[i].width, faces[i].y + faces[i].height), Scalar( 0, 255, 0 ), 2);
+	// for( int i = 0; i < dartboards.size(); i++ )	{
+	// 	rectangle(frame, Point(dartboards[i].x, dartboards[i].y), Point(dartboards[i].x + dartboards[i].width, dartboards[i].y + dartboards[i].height), Scalar( 0, 255, 0 ), 2);
+	// }
+
+	return dartboards;
+}
+
+// Compare result of Viola Jones detection with Hough accumulators
+vector<Rect> hough_combine( Mat lines, int*** circles, vector<Rect> boards) {
+	vector<Rect> new_boards;
+	//Iterate through the boards
+	for( int i = 0; i < boards.size(); i++ )	{
+		//Find the centre of each board
+		int centre_x = (boards[i].x + boards[i].width)/2;
+		int centre_y = (boards[i].y + boards[i].height)/2;
+		//For each point in a 3*3 kernel at the centre
+		for( int x0 = centre_x-1; x0 <= centre_x+1; x0++ ) {
+			for( int y0 = centre_y-1; y0 <= centre_y+1; x0++ ) {
+				//Check to see if the pixel in the thresholded linespace has 5-10 spokes
+				//Check to see if the pixel in the thresholded circlespace has 3-7 concentric circles
+				//If yes to both add current rectangle to new_boards
+			}
+		}
+
 	}
+	return new_boards;
 }
 
 //Prep the image for Hough Transform
@@ -149,7 +196,7 @@ int*** circle_transform( Mat frame ) {
 				for (int x0 = x; x0 < (x+2*r_dim); x0++){
 					for (int y0 = y; y0 < (y+2*r_dim); y0++){
 
-						//If pixel is an edge
+						// //If pixel is an edge
 						int intensity2 = (int)padded_frame.at<uchar>(x0, y0);
 			      if( intensity2 > 250) {
 							int r = sqrt(pow((x - x0), 2) + pow((y - y0), 2));
