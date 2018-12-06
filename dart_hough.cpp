@@ -42,30 +42,11 @@ int main( int argc, const char** argv ) {
 	Mat edgemapped = cannify_image( frame0 );
 	// 4. Perform line Hough Transform on image
 	Mat transformed = line_transform( edgemapped );
-	// 5. Perform circle Hough Transform on the image
-	int*** circ_trans = circle_transform( edgemapped );
-	// 6. Threshold to return highest value points
-	//Threshold the lines accumulator
+	// 5. Perform circle Hough Transform on the image & threshold
+	int*** thresh_circ = circle_transform( edgemapped );
+	// 6. Threshold the line space
 	Mat thresh;
 	threshold(transformed, thresh, 100, 255, THRESH_BINARY);
-
-	//Threshold the circles accumulator
-	int max_val = 0;
-	for (int i = 0; i < sizeof(circ_trans) / sizeof(*circ_trans); ++i) {
-		for (int j = 0; j < sizeof(*circ_trans) / sizeof(**circ_trans); ++j) {
-			for (int k = 5; k < sizeof(**circ_trans) / sizeof(***circ_trans); ++k) {
-				if (circ_trans[i][j][k] > max_val) {
-					max_val = circ_trans[i][j][k];
-				}
-				// if (circ_trans[i][j][k] < 100) {
-				// 	circ_trans[i][j][k] = 0;
-				// } else {
-				// 	circ_trans[i][j][k] = 255;
-				// }
-			}
-		}
-	}
-	std::cout << max_val << std::endl;
 
 	// 7. Perform Viola Jones detection on images
 	//vector<Rect> dartboards = viola_jones_detection( frame0 );
@@ -177,12 +158,20 @@ int*** circle_transform( Mat frame ) {
 	//Generate empty circle space
   int x_dim = frame_height;
 	int y_dim = frame_width;
-	int r_dim = 50;
+	int r_dim = 100;
   int*** circle_space = malloc3dArray(x_dim, y_dim, r_dim);
+	for (int i = 0; i < x_dim; i++) {
+		for (int j = 0; j < y_dim; j++) {
+			for (int k = 0; k < r_dim; k++) {
+				circle_space[i][j][k] = 0;
+			}
+		}
+	}
 
 	//Create a new image with a black border buffer
 	Mat padded_frame;
 	copyMakeBorder( frame, padded_frame, r_dim, r_dim, r_dim, r_dim, BORDER_CONSTANT, 0 );
+	imwrite("padded.jpg", padded_frame);
 
 	//Iterate over each pixel
 	for (int x = 0; x < frame_height; x++){
@@ -193,8 +182,8 @@ int*** circle_transform( Mat frame ) {
       if( intensity > 250) {
 
 				//Iterate through each pixel in a 50 pixel radius
-				for (int x0 = x; x0 < (x+2*r_dim); x0++){
-					for (int y0 = y; y0 < (y+2*r_dim); y0++){
+				for (int x0 = x; x0 < (x+(2*r_dim)); x0++){
+					for (int y0 = y; y0 < (y+(2*r_dim)); y0++){
 
 						// //If pixel is an edge
 						int intensity2 = (int)padded_frame.at<uchar>(x0, y0);
@@ -211,6 +200,25 @@ int*** circle_transform( Mat frame ) {
       }
 	  }
 	}
+
+	//Threshold the circles accumulator
+	//int max_val = 0;
+	for (int i = 0; i < x_dim; i++) {
+		for (int j = 0; j < y_dim; j++) {
+			for (int k = 5; k < r_dim; k++) {
+				// if (circle_space[i][j][k] > max_val) {
+				// 	max_val = circle_space[i][j][k];
+				// }
+				if (circle_space[i][j][k] < 100) {
+					circle_space[i][j][k] = 0;
+				} else {
+					circle_space[i][j][k] = 255;
+				}
+			}
+		}
+	}
+	//std::cout << max_val << std::endl;
+
 	return circle_space;
 }
 
