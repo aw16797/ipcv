@@ -25,7 +25,8 @@ Mat cannify_image( Mat frame );
 Mat line_transform( Mat frame );
 int*** circle_transform( Mat frame );
 vector<Rect> hough_combine( Mat lines, int*** circles, vector<Rect> boards);
-Mat plot_shapes( Mat img , Mat line_space);
+void draw_lines( Mat img ,  Mat lines );
+void plot_shapes( Mat img , vector<Rect> final_recs);
 
 
 /** Global variables */
@@ -35,7 +36,7 @@ CascadeClassifier cascade;
 /** @function main */
 int main( int argc, const char** argv ) {
 	// 1. Read Input Image
-	Mat frame0 = imread("images/dart7.jpg", CV_LOAD_IMAGE_COLOR);
+	Mat frame0 = imread("images/dart1.jpg", CV_LOAD_IMAGE_COLOR);
 	// 2. Load the Strong Classifier in a structure called `Cascade'
 	if( !cascade.load( cascade_name ) ){ printf("--(!)Error loading\n"); return -1; };
 	// 3. Blur and Canny edge detect the image
@@ -43,17 +44,18 @@ int main( int argc, const char** argv ) {
 	// 4. Perform line Hough Transform on image
 	Mat transformed = line_transform( edgemapped );
 	// 5. Perform circle Hough Transform on the image & threshold
-	int*** thresh_circ = circle_transform( edgemapped );
+	// int*** thresh_circ = circle_transform( edgemapped );
+	int*** thresh_circ;
 	// 6. Threshold the line space
 	Mat thresh;
 	threshold(transformed, thresh, 100, 255, THRESH_BINARY);
-
+	draw_lines(frame0, thresh);
 	// 7. Perform Viola Jones detection on images
-	//vector<Rect> dartboards = viola_jones_detection( frame0 );
+	vector<Rect> dartboards = viola_jones_detection( frame0 );
 	// 8. Combine result with Hough detected shapes
-	//vector<Rect> final_boards = hough_combine( transformed, circ_trans, dartboards);
+	vector<Rect> final_boards = hough_combine( thresh, thresh_circ, dartboards);
 	// 9. Plot final results on image
-
+	plot_shapes( frame0 , final_boards);
 }
 
 /** @function detectAndDisplay */
@@ -66,39 +68,79 @@ vector<Rect> viola_jones_detection( Mat frame ) {
 	equalizeHist( frame_gray, frame_gray );
 
 	// 2. Perform Viola-Jones Object Detection
-	// Vector of rectangles stored in 'dartboards'
 	cascade.detectMultiScale( frame_gray, dartboards, 1.1, 1, 0|CV_HAAR_SCALE_IMAGE, Size(50, 50), Size(500,500) );
-
-  // 3. Print number of Faces found
-	//std::cout << dartboards.size() << std::endl;
-
-  // 4. Draw box around faces found
-	// for( int i = 0; i < dartboards.size(); i++ )	{
-	// 	rectangle(frame, Point(dartboards[i].x, dartboards[i].y), Point(dartboards[i].x + dartboards[i].width, dartboards[i].y + dartboards[i].height), Scalar( 0, 255, 0 ), 2);
-	// }
 
 	return dartboards;
 }
 
 // Compare result of Viola Jones detection with Hough accumulators
 vector<Rect> hough_combine( Mat lines, int*** circles, vector<Rect> boards) {
-	vector<Rect> new_boards;
+	const float pi = 3.14159;
 	//Iterate through the boards
 	for( int i = 0; i < boards.size(); i++ )	{
 		//Find the centre of each board
 		int centre_x = (boards[i].x + boards[i].width)/2;
 		int centre_y = (boards[i].y + boards[i].height)/2;
-		//For each point in a 3*3 kernel at the centre
-		for( int x0 = centre_x-1; x0 <= centre_x+1; x0++ ) {
-			for( int y0 = centre_y-1; y0 <= centre_y+1; x0++ ) {
-				//Check to see if the pixel in the thresholded linespace has 5-10 spokes
-				//Check to see if the pixel in the thresholded circlespace has 3-7 concentric circles
-				//If yes to both add current rectangle to new_boards
+
+		// Check to see if the pixel in the thresholded linespace has 5-10 spokes
+		int spokes = 0;
+		for (int j = 0; j < 10; j++){
+			int theta = (j * 18) + 9;
+			float t = (theta * pi)/180;
+			int rho = (centre_x * cos(t)) + (centre_y * sin(t));
+      int intensity = (int)lines.at<uchar>(theta, rho);
+      if( intensity > 250) {
+				spokes++;
 			}
 		}
 
+		std::cout << spokes << std::endl;
+		// Check to see if the pixel in the thresholded circlespace has 3-7 concentric circles
+		// If yes to both add current rectangle to new_boards
+		if(!(spokes >= 3 && spokes <=10)) {
+			boards.erase(boards.begin() + i);
+		}
 	}
-	return new_boards;
+	return boards;
+}
+
+void draw_lines( Mat img ,  Mat lines ) {
+	const float pi = 3.14159;
+	for (int theta = 0; theta < lines.rows; theta++){
+		for (int rho = 0; rho < lines.cols; rho++){
+      int intensity = (int)lines.at<uchar>(theta, rho);
+      if( intensity > 250) {
+				float t = (theta * pi)/180;
+				//Draw lines
+				if((theta > 90 )){
+	        Point pt1(rho / cos(t), 0);
+	        Point pt2( (rho - img.rows * sin(t))/cos(t), img.rows);
+	        line(img, pt1, pt2, Scalar(255), 1);
+		    } else {
+	        Point pt1(0, rho / sin(t));
+	        Point pt2(img.cols, (rho - img.cols * cos(t))/sin(t));
+	        line(img, pt1, pt2, Scalar(255), 1);
+		    }
+
+			}
+		}
+	}
+	imwrite( "lines.jpg", img );
+}
+
+//Draw bounding boxes
+void plot_shapes( Mat frame , vector<Rect> final_recs) {
+
+	// Print number of Faces found
+	std::cout << final_recs.size() << std::endl;
+
+	//Draw rectangles
+	for( int i = 0; i < final_recs.size(); i++ )	{
+		rectangle(frame, Point(final_recs[i].x, final_recs[i].y), Point(final_recs[i].x + final_recs[i].width, final_recs[i].y + final_recs[i].height), Scalar( 0, 255, 0 ), 2);
+	}
+
+	//Save image
+	imwrite( "VJ_HT.jpg", frame );
 }
 
 //Prep the image for Hough Transform
@@ -122,7 +164,6 @@ Mat line_transform( Mat frame ) {
 
 	//Generate empty Hough Space
   int theta_max = 180;
-  //rho should be ~769
   int rho_max = round(sqrt(pow(frame_width, 2) + pow(frame_height, 2)));
   Mat hough_space = Mat::zeros(theta_max, rho_max, CV_8UC1);
 
@@ -151,14 +192,13 @@ Mat line_transform( Mat frame ) {
 
 //Perform circle hough transform on the edge image
 int*** circle_transform( Mat frame ) {
-  const float pi = 3.14159;
   int frame_height = frame.rows;
 	int frame_width = frame.cols;
 
 	//Generate empty circle space
   int x_dim = frame_height;
 	int y_dim = frame_width;
-	int r_dim = 100;
+	int r_dim = 50;
   int*** circle_space = malloc3dArray(x_dim, y_dim, r_dim);
 	for (int i = 0; i < x_dim; i++) {
 		for (int j = 0; j < y_dim; j++) {
@@ -221,26 +261,3 @@ int*** circle_transform( Mat frame ) {
 
 	return circle_space;
 }
-
-// //Plot the lines on the image
-// Mat plot_lines( Mat img , Mat line_space) {
-// 	//Iterate over the thresholded line space
-// 	for (int theta = 0; theta < line_space.rows; theta++){
-// 		for (int rho = 0; rho < line_space.cols; rho++){
-//       int intensity = (int)line_space.at<uchar>(theta, rho);
-//       if( intensity > 99) {
-// 				//Where it finds a bright pixel, convert polar to coordinates
-// 				float t = (theta * pi)/180;
-// 				//(X0, Y0) = (rho * cos(theta), rho * sin(theta))
-// 				int x0 = rho * cos(t);
-// 				int y0 = rho * sin(t);
-// 				//(dx, dy) = ( -sin(theta), cos(theta))
-// 				dx = -sin(t);
-// 				dy = cos(t);
-//
-// 			}
-// 		}
-// 	}
-//
-// 	return img;
-// }
