@@ -69,12 +69,11 @@ int main( int argc, char** argv )
   int i = 0;
   while(foo != 0){
     foo = coordinates[i][0];
-    
+    i++;
+    std::cout << i << std::endl;
+
   }
-
-
 	truefaces = i;
-	int intcoords [truefaces][4];
 
 	// 2. Load the Strong Classifier in a structure called `Cascade'
 	if( !cascade.load( cascade_name ) ){ printf("--(!)Error loading\n"); return -1; };
