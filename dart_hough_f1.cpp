@@ -1,15 +1,17 @@
-/ header inclusion
 // header inclusion
 #include <stdio.h>
 #include <math.h>
 #include <3darray.c>
-#include <2darray.c>
 #include "opencv2/objdetect/objdetect.hpp"
 #include "opencv2/opencv.hpp"
 #include "opencv2/core/core.hpp"
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 #include <iostream>
+#include <string>
+#include <stdlib.h>
+#include <fstream>
+#include <sstream>
 
 using namespace std;
 using namespace cv;
@@ -30,16 +32,67 @@ vector<Rect> hough_combine( Mat circles, vector<Rect> boards, int radius);
 //Draw output
 void draw_lines( Mat img ,  Mat lines );
 void plot_shapes( Mat img , vector<Rect> final_recs);
-
+float f_one();
+//char* findCSV(char* fname);
 
 /** Global variables */
 String cascade_name = "dartcascade/cascade.xml";
 CascadeClassifier cascade;
+int tp,trueboards,detected;
+int coordinates[3][4];
+int threshcircle = 145;
+int maxcircles = 6;
 
 /** @function main */
-int main( int argc, const char** argv ) {
+int main( int argc, char** argv ) {
 	// 1. Read Input Image
-	Mat frame0 = imread("images/dart0.jpg", CV_LOAD_IMAGE_COLOR);
+  // char* imageName = argv[1];
+  // Mat frame0;
+  // frame0 = imread( imageName, CV_LOAD_IMAGE_COLOR);
+	//
+  // if( argc != 2 || !frame0.data )
+  // {
+  //   printf( " No image data \n " );
+  //   return -1;
+  // }
+	Mat frame0 = imread("images/dart15.jpg", CV_LOAD_IMAGE_COLOR);
+
+	char coords[3][4];
+  std::ifstream file("csvs/dart15board.csv");
+
+	for(int a = 0; a < 11; a++)
+  {
+    std::string line;
+    std::getline (file,line);
+    // if(!file.good())
+    // {
+    //   break;
+    // }
+    std::stringstream iss(line);
+
+    for(int b = 0; b < 4; b++)
+    {
+      std::string value;
+      std::getline(iss,value,',');
+      // if(!iss.good())
+      // {
+      //   break;
+      // }
+      std::stringstream convertor(value);
+      convertor >> coordinates[a][b];
+      //std::cout << coordinates[a][b] << std::endl;
+    }
+  }
+
+  int foo = 1;
+  int i = 0;
+  while(foo != 0){
+    foo = coordinates[i][0];
+    if(foo != 0){i++;}
+    //std::cout << i << std::endl;
+
+  }
+	trueboards = i;
 
 	// 2. Load the Strong Classifier in a structure called `Cascade'
 	if( !cascade.load( cascade_name ) ){ printf("--(!)Error loading\n"); return -1; };
@@ -78,6 +131,90 @@ int main( int argc, const char** argv ) {
 
 	// 8. Plot final results on image
 	plot_shapes( frame0 , final_boards);
+
+	std::cout.precision(5);
+  std::cout.setf(std::ios::fixed);
+	std::cout << f_one() << std::endl;
+
+	return 0;
+}
+
+float f_one(){
+  int fn = trueboards - tp;
+	int fp = detected - tp;
+
+  std::cout << "TP" << tp << std::endl;
+  std::cout << "true" << trueboards << std::endl;
+  std::cout << "detected" << detected << std::endl;
+  std::cout << "FP" << fp << std::endl;
+  std::cout << "FN" << fn << std::endl;
+
+	float precision = (float)tp/((float)tp+(float)fp);
+  std::cout << "precision " << precision << std::endl;
+
+  float recall = (float)tp/((float)tp+(float)fn);
+  std::cout << "recall " << recall << std::endl;
+
+  float f1 = 2 * (precision * recall) / (precision + recall);
+  return f1;
+}
+
+char* findCSV( char* fname ){
+	char* s = fname;
+	char* csvname;
+	if(strcmp(s,"dart0.jpg")==0){
+		csvname = (char*)"csvs/dart0board.csv";
+	}
+	else if(strcmp(s,"dart1.jpg")==0){
+		csvname = (char*)"csvs/dart1board.csv";
+	}
+	else if(strcmp(s,"dart2.jpg")==0){
+		csvname = (char*)"csvs/dart2board.csv";
+	}
+	else if(strcmp(s,"dart3.jpg")==0){
+		csvname = (char*)"csvs/dart3board.csv";
+	}
+	else if(strcmp(s,"dart4.jpg")==0){
+		csvname = (char*)"csvs/dart4board.csv";
+	}
+	else if(strcmp(s,"dart5.jpg")==0){
+		csvname = (char*)"csvs/dart5board.csv";
+	}
+	else if(strcmp(s,"dart6.jpg")==0){
+		csvname = (char*)"csvs/dart6board.csv";
+	}
+	else if(strcmp(s,"dart7.jpg")==0){
+		csvname = (char*)"csvs/dart7board.csv";
+	}
+	else if(strcmp(s,"dart8.jpg")==0){
+		csvname = (char*)"csvs/dart8board.csv";
+	}
+	else if(strcmp(s,"dart9.jpg")==0){
+		csvname = (char*)"csvs/dart9board.csv";
+	}
+	else if(strcmp(s,"dart10.jpg")==0){
+		csvname = (char*)"csvs/dart10board.csv";
+	}
+	else if(strcmp(s,"dart11.jpg")==0){
+		csvname = (char*)"csvs/dart11board.csv";
+	}
+	else if(strcmp(s,"dart12.jpg")==0){
+		csvname = (char*)"csvs/dart12board.csv";
+	}
+	else if(strcmp(s,"dart13.jpg")==0){
+		csvname = (char*)"csvs/dart13board.csv";
+	}
+	else if(strcmp(s,"dart14.jpg")==0){
+		csvname = (char*)"csvs/dart14board.csv";
+	}
+	else if(strcmp(s,"dart15.jpg")==0){
+		csvname = (char*)"csvs/dart15board.csv";
+	}
+	else{
+		std::cout << "no csv" << std::endl;
+	}
+	return csvname;
+
 }
 
 void sobelX( cv::Mat &output ) {
@@ -288,7 +425,7 @@ Mat circle_transform( Mat edges, Mat direction, Mat img, int max_radius) {
 	//Threshold the cumulative space
 	for (int y = 0; y < frame_height; y++){
 		for (int x = 0; x < frame_width; x++){
-			threshold(hough_visual, hough_thresh, 200, 255, THRESH_BINARY);
+			threshold(hough_visual, hough_thresh, threshcircle, 255, THRESH_BINARY);
 		}
 	}
 
@@ -365,11 +502,41 @@ vector<Rect> hough_combine( Mat circles, vector<Rect> boards, int radius) {
 			}
 		}
 		// std::cout << circles_detected << std::endl;
-		if(circles_detected > 9) {
+		if(circles_detected > maxcircles) {
 			final_boards.push_back(boards[i]);
 		}
 	}
 	// std::cout << loopsize << std::endl;
+  detected = final_boards.size();
+
+	for(int i = 0; i < trueboards; i++)
+	{
+		int truematch = 0;
+		for( int j = 0; j < final_boards.size(); j++ )
+		{
+		   int tl[2] = {final_boards[j].x, final_boards[j].y};
+			 int br[2] = {final_boards[j].x + final_boards[j].width, final_boards[j].y + final_boards[j].height};
+			 //if: detected rectangle's top left point is within true rectangle's top left Point
+			 //and detected rectangle's bottom right point is within true rectangle's bottom left point
+       if(coordinates[i][0] <= tl[0]){
+          //std::cout << "match1" << std::endl;
+          if(coordinates[i][1] <= tl[1]){
+             //std::cout << "match2" << std::endl;
+             if(coordinates[i][2] >= br[0]){
+                //std::cout << "match3" << std::endl;
+                if(coordinates[i][3] >= br[1]){
+                   //std::cout << "it worked" << std::endl;
+                   truematch = 1;
+								}
+						 }
+					}
+			 }
+    }
+	  if ( truematch == 1 ){
+	  	tp++;
+  	}
+	}
+
 	return final_boards;
 }
 

@@ -23,8 +23,8 @@ using namespace cv;
 
 /** Function Headers */
 void detectAndDisplay( Mat frame );
-int toInt( char x );
 float f_one();
+void truth(cv::Mat &output);
 
 /** Global variables */
 String cascade_name = "frontalface.xml";
@@ -36,9 +36,9 @@ int coordinates[11][4];
 int main( int argc, char** argv )
 {
   // 1. Read Input Image
-  Mat frame = imread("images/dart15.jpg", CV_LOAD_IMAGE_COLOR);
+  Mat frame = imread("images/dart4.jpg", CV_LOAD_IMAGE_COLOR);
 	char coords[11][4];
-  std::ifstream file("csvs/dart15face.csv");
+  std::ifstream file("csvs/dart4face.csv");
 
   for(int a = 0; a < 11; a++)
   {
@@ -60,7 +60,6 @@ int main( int argc, char** argv )
       // }
       std::stringstream convertor(value);
       convertor >> coordinates[a][b];
-      std::cout << coordinates[a][b] << std::endl;
       //std::cout << coordinates[a][b] << std::endl;
     }
   }
@@ -69,8 +68,8 @@ int main( int argc, char** argv )
   int i = 0;
   while(foo != 0){
     foo = coordinates[i][0];
-    i++;
-    std::cout << i << std::endl;
+    if(foo != 0){i++;}
+    //std::cout << i << std::endl;
 
   }
 	truefaces = i;
@@ -84,22 +83,47 @@ int main( int argc, char** argv )
 	// 4. Save Result Image
 	imwrite( "vj.jpg", frame );
 
+  Mat groundtruth = imread("images/dart4.jpg", CV_LOAD_IMAGE_COLOR);
+  truth(groundtruth);
+
 	std::cout.precision(5);
   std::cout.setf(std::ios::fixed);
-	//std::cout << f_one() << std::endl;
+	std::cout << f_one() << std::endl;
 
 	return 0;
 }
 
-int toInt( char x ){ return x;}
+void truth(cv::Mat &output){
+  for( int i = 0; i < truefaces; i++ )
+  {
+    int tlx = coordinates[i][0];
+    int tly = coordinates[i][1];
+    int blx = coordinates[i][2];
+    int bly = coordinates[i][3];
+    rectangle(output, Point(tlx,tly), Point(blx,bly), Scalar( 255, 255, 0 ), 2);
+  }
+  imwrite( "truth4.jpg", output);
+
+}
 
 float f_one(){
-  int fp = truefaces - tp;
-	int fn = detected - tp;
-	//float precision = tp/(tp+fp);
-  // float recall = tp/(tp+fn);
-  // float f1 = 2 * (precision * recall) / (precision + recall);
-  // return f1;
+  int fn = truefaces - tp;
+	int fp = detected - tp;
+
+  std::cout << "TP" << tp << std::endl;
+  std::cout << "true" << truefaces << std::endl;
+  std::cout << "detected" << detected << std::endl;
+  std::cout << "FP" << fp << std::endl;
+  std::cout << "FN" << fn << std::endl;
+
+	float precision = (float)tp/((float)tp+(float)fp);
+  std::cout << "precision " << precision << std::endl;
+
+  float recall = (float)tp/((float)tp+(float)fn);
+  std::cout << "recall " << recall << std::endl;
+
+  float f1 = 2 * (precision * recall) / (precision + recall);
+  return f1;
 }
 
 /** @function detectAndDisplay */
@@ -143,22 +167,19 @@ void detectAndDisplay( Mat frame )
 			 //if: detected rectangle's top left point is within true rectangle's top left Point
 			 //and detected rectangle's bottom right point is within true rectangle's bottom left point
 
-       if(coordinates[i][0] >= tl[0]){
+       if(coordinates[i][0] <= tl[0]){
           std::cout << "match1" << std::endl;
           if(coordinates[i][1] <= tl[1]){
-             std::cout << "match1" << std::endl;
+             std::cout << "match2" << std::endl;
              if(coordinates[i][2] >= br[0]){
                 std::cout << "match3" << std::endl;
-                if(coordinates[i][3] <= br[1]){
+                if(coordinates[i][3] >= br[1]){
                    std::cout << "it worked" << std::endl;
                    truematch = 1;
-
       }}}}
     }
-
 	if ( truematch == 1 ){
 		tp++;
 	}
 	}
-  	//std::cout << tp << std::endl;
 }
